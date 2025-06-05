@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { LockBodyScroll } from "../hooks/LockScroll";
 
 import {
   Play,
@@ -31,10 +32,12 @@ import {
 import {LoginModal} from "../components/ProfileModal";
 import {LoginPage} from "./LoginPage";
 import SignupPage from "./SignupPage";
+import NotificationPanel from "../components/NotificationPanel";
 
 
 
 export default function LandingPage() {
+   
   const [isPlaying, setIsPlaying] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
   const [likedTracks, setLikedTracks] = useState(new Set());
@@ -43,6 +46,8 @@ export default function LandingPage() {
 //   Login & Signup Modal
   const [islogin, setIsLogin]=useState<boolean>(false)
   const [isSignup, setIsSignup]=useState<boolean>(false)
+//   Notification Panel
+const [openNotif, setOpenNotif]=useState<boolean>(false)
 
   const toggleLike = (trackId: any) => {
     const newLiked = new Set(likedTracks);
@@ -53,6 +58,9 @@ export default function LandingPage() {
     }
     setLikedTracks(newLiked);
   };
+
+//   Prevent the page from scrolling
+ LockBodyScroll(isSignup);
 
   const tracks = [
     {
@@ -103,6 +111,12 @@ export default function LandingPage() {
 
   }
 
+// Open The notification panel
+ const OpenNotificationPanel=()=>{
+    setOpenNotif(true)
+
+ }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
       
@@ -114,6 +128,9 @@ export default function LandingPage() {
 
      {/* signup modal */}
      {isSignup && <SignupPage/>}
+
+     {/* Notification Panel */}
+     {openNotif && <NotificationPanel openNotif={openNotif} setOpenNotif={setOpenNotif}/>}
 
       {/* Header */}
       <header className="backdrop-blur-xl bg-black/20 border-b border-white/10 sticky top-0 z-50">
@@ -143,9 +160,9 @@ export default function LandingPage() {
 
             {/* User Actions */}
             <div className="flex items-center space-x-4">
-              <button className="relative p-2 text-gray-300 hover:text-white transition-colors">
+              <button onClick={()=>setOpenNotif((prev)=>!prev)} className="relative p-2 text-gray-300 hover:text-white transition-colors">
                 <Bell className="w-6 h-6" />
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
+                <span className="absolute -top-1 -right-1 w-3 h-3  rounded-full"></span>
               </button>
 
               {/* <button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 px-6 py-2 rounded-full font-semibold transition-all duration-200 transform hover:scale-105 flex items-center space-x-2">
