@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
+
 import {
   Play,
   Pause,
@@ -10,7 +11,6 @@ import {
   Compass,
   Library,
   User,
-  Settings,
   Bell,
   Plus,
   MoreHorizontal,
@@ -25,12 +25,24 @@ import {
   TrendingUp,
   Clock,
   PlayCircle,
+  
+  X,
 } from "lucide-react";
+import {LoginModal} from "../components/ProfileModal";
+import {LoginPage} from "./LoginPage";
+import SignupPage from "./SignupPage";
+
+
 
 export default function LandingPage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
   const [likedTracks, setLikedTracks] = useState(new Set());
+//   Profile Modal
+  const [loginModal, setIsLoginModal]=useState(false)
+//   Login & Signup Modal
+  const [islogin, setIsLogin]=useState<boolean>(false)
+  const [isSignup, setIsSignup]=useState<boolean>(false)
 
   const toggleLike = (trackId: any) => {
     const newLiked = new Set(likedTracks);
@@ -54,28 +66,7 @@ export default function LandingPage() {
       avatar: "bg-purple-500",
       waveform: "bg-gradient-to-r from-purple-400 to-pink-400",
     },
-    {
-      id: 2,
-      title: "Urban Dreams",
-      artist: "City Lights",
-      genre: "Hip Hop",
-      duration: "4:15",
-      plays: "89K",
-      likes: "3.8K",
-      avatar: "bg-blue-500",
-      waveform: "bg-gradient-to-r from-blue-400 to-cyan-400",
-    },
-    {
-      id: 3,
-      title: "Acoustic Soul",
-      artist: "River Stone",
-      genre: "Folk",
-      duration: "5:28",
-      plays: "234K",
-      likes: "12.1K",
-      avatar: "bg-green-500",
-      waveform: "bg-gradient-to-r from-green-400 to-emerald-400",
-    },
+  
   ];
 
   const trendingTracks = [
@@ -84,8 +75,46 @@ export default function LandingPage() {
     { id: 6, title: "Fire Storm", artist: "Rock Legends", plays: "756K" },
   ];
 
+  const login=()=>{
+    setIsLoginModal((prev)=>!prev)
+
+  };
+//   Close the profile modal... confusing a bit
+  const closeModal=()=>{
+      setIsLoginModal(false)
+
+  }
+//   Open Signup page
+  const onSignupClick=()=>{
+    setIsSignup(true)
+    setIsLoginModal(false)
+
+  }
+
+//    Open Login Page
+  const onLoginCLick=()=>{
+    setIsLoginModal(false)
+    setIsLogin(true)
+
+  }
+// Close login page
+  const closeLoginPage=()=>{
+   setIsLogin(false)
+
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
+      
+      {/* profile modal */}
+      {loginModal && <LoginModal onSignupClick={onSignupClick} closeModal={closeModal} onLoginClick={onLoginCLick}/>}
+     
+     {/* login modal */}
+     {islogin && <LoginPage closeLoginPage={closeLoginPage} />}
+
+     {/* signup modal */}
+     {isSignup && <SignupPage/>}
+
       {/* Header */}
       <header className="backdrop-blur-xl bg-black/20 border-b border-white/10 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -118,12 +147,17 @@ export default function LandingPage() {
                 <Bell className="w-6 h-6" />
                 <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
               </button>
-              <button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 px-6 py-2 rounded-full font-semibold transition-all duration-200 transform hover:scale-105 flex items-center space-x-2">
+
+              {/* <button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 px-6 py-2 rounded-full font-semibold transition-all duration-200 transform hover:scale-105 flex items-center space-x-2">
                 <Upload className="w-4 h-4" />
                 <span>Upload</span>
-              </button>
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center cursor-pointer">
-                <User className="w-5 h-5" />
+              </button> */}
+
+              <div
+                onClick={login}
+                className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center cursor-pointer"
+              >
+                {!loginModal ? <User className="w-5 h-5 " /> : <X />}
               </div>
             </div>
           </div>
