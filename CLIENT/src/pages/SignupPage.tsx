@@ -150,7 +150,7 @@ export default function SignupPage(): JSX.Element {
   };
 
   return (
-    <div className='fixed z-55 w-full h-screen overflow-auto'>
+    <div className="fixed z-55 w-full  scale-100">
       <div className=" bg-slate-950 relative overflow-auto z-55">
         {/* Animated Background */}
         <div className="absolute inset-0 max-h-screen">
@@ -201,7 +201,7 @@ export default function SignupPage(): JSX.Element {
           </div>
 
           {/* Right Side - Signup Form */}
-          <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-8">
+          <div className="w-full lg:w-1/2  flex items-center justify-center p-4 sm:p-8">
             <div className="w-full max-w-md">
               <div className="transition-transform ease-in-out duration-300 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white rounded-2xl shadow-2xl border border-purple-800/30 backdrop-blur-sm overflow-hidden">
                 {/* Progress Indicator */}

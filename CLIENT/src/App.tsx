@@ -1,4 +1,5 @@
 import LandingPage from "./pages/Landing"
+import './scrollbar.css'
 
 const App = () => {
   return (
