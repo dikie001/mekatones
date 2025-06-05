@@ -12,7 +12,6 @@ import { FaGithub } from "react-icons/fa6";
   };
 
 export const LoginPage:React.FC<LoginPageProps>=({closeLoginPage})=> {
-  const [isOpen, setIsOpen] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
