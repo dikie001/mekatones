@@ -9,12 +9,12 @@ import {
   ArrowRight,
   AlertCircle,
   XIcon,
-  Loader,
 } from "lucide-react";
 import { FaGithub, FaGoogle, FaSpinner } from "react-icons/fa6";
-import { auth,googleProvider } from "../firebase/Config";
+import { auth, googleProvider } from "../firebase/Config";
 import { createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 interface FormData {
   firstName: string;
@@ -35,8 +35,6 @@ interface FormErrors {
   terms?: string;
 }
 
-type SocialProvider = "Google" | "GitHub";
-
 export default function SignupPage() {
   const [formData, setFormData] = useState<FormData>({
     firstName: "",
@@ -54,6 +52,7 @@ export default function SignupPage() {
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
   const [errors, setErrors] = useState<FormErrors>({});
   const [showDetails, setShowDetails] = useState<boolean>(false);
+  const navigate = useNavigate();
   // const [firstName, setFirstName]=useState<string>('');
   // const [lastName, setLastName]=useState<string>('');
   // const [email, setEmail]=useState<string>('');
@@ -116,13 +115,14 @@ export default function SignupPage() {
 
   const handleSubmit = async (): Promise<void> => {
     if (validateStep(2)) {
-      setIsLoading(true);
       setShowDetails(true);
     }
   };
 
   // Confirm user details and initiate registration
   const handleConfirm = async () => {
+    setIsLoading(true);
+
     try {
       const userCredentials = await createUserWithEmailAndPassword(
         auth,
@@ -130,6 +130,7 @@ export default function SignupPage() {
         formData.password
       );
       toast.success("Account created successfully!");
+      navigate("/");
       setIsLoading(false);
       setShowDetails(false);
       return userCredentials.user;
@@ -139,21 +140,32 @@ export default function SignupPage() {
   };
 
   // Google Signup
+  const GoogleSignup = async () => {
+    try {
+      const googleAccount = await signInWithPopup(auth, googleProvider);
+      const toasty = toast.success("Signed in successfully", { id: "toasty" });
+      navigate('/')
 
-const GoogleSignup= async()=>{
-  try{
-    const googleAccount = await signInWithPopup(auth, googleProvider)
-    return googleAccount.user
-  }catch(e){
-    throw(e)
-  }
+      return googleAccount.user;
+    } catch (e) {
+      const toasty = toast.error('Error signing in. Try again', { id: "toasty" });
+    }
+  };
 
-
-}
+  // GitHub Signup
+  const GithubSignup = () => {
+    const toasty = toast.error("GitHub Setup coming soon...", { id: "toasty" });
+  };
 
   const handleCancel = () => {
     setIsLoading(false);
     setShowDetails(false);
+  };
+
+  // Close details modal
+  const closeDetailsModal = () => {
+    setShowDetails(false);
+    setIsLoading(false);
   };
 
   const getPasswordStrength = (): number => {
@@ -206,14 +218,20 @@ const GoogleSignup= async()=>{
 
   const DetailsModal = () => {
     return (
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 sm:p-6">
-        <div className="bg-gradient-to-br from-purple-700 via-slate-800 to-slate-950 text-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 relative animate-fadeIn">
+      <div
+        className={` fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 sm:p-6`}
+      >
+        <div
+          className={`${
+            isLoading && "backdrop-blur"
+          } bg-gradient-to-br from-purple-700 via-slate-800 to-slate-950 text-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 relative animate-fadeIn`}
+        >
           {/* Close Button */}
           <button
-            onClick={() => setShowDetails(false)}
-            className="absolute top-4 right-4 text-white hover:text-purple-300 transition"
+            onClick={closeDetailsModal}
+            className="absolute top-4 right-4 -white  rounded-full w-7 flex justify-center items-center h-7 transition"
           >
-            <XIcon className="h-6 w-6" />
+            <XIcon className="h-6 w-6 hover:rotate-90 transition-transform duration-300" />
           </button>
 
           {/* Header */}
@@ -224,10 +242,12 @@ const GoogleSignup= async()=>{
             </p>
           </div>
 
-          <div className="flex gap-10 justify-center backdrop-blur-2xl">
-            <FaSpinner className="animate-spin" size={40} />
-            <Loader className="animate-spin" size={40} />
-          </div>
+          {isLoading && (
+            <div className="fixed inset-0  flex flex-col h-50 rounded-lg items-center  m-auto shadow-md shadow-purple-700 bg-slate-800/90 w-50  justify-center ">
+              <FaSpinner className="animate-spin" size={40} />
+              <h3 className="mt-3">Creating Account...</h3>
+            </div>
+          )}
 
           {/* Info Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -448,14 +468,14 @@ const GoogleSignup= async()=>{
                 {/* Social Buttons */}
                 <div className="grid grid-cols-2 gap-3">
                   <button
-                    onClick={() => GoogleSignup("Google")}
+                    onClick={GoogleSignup}
                     className="flex items-center justify-center py-3 px-4 bg-white/5 hover:bg-white/10 border border-purple-800/30 rounded-xl transition-all duration-200 hover:scale-[1.02] backdrop-blur-sm"
                   >
                     <FaGoogle size={18} className="text-gray-300" />
                     <span className="ml-2 text-sm text-gray-300">Google</span>
                   </button>
                   <button
-                    onClick={() => GithubSignup("GitHub")}
+                    onClick={GithubSignup}
                     className="flex items-center justify-center py-3 px-4 bg-white/5 hover:bg-white/10 border border-purple-800/30 rounded-xl transition-all duration-200 hover:scale-[1.02] backdrop-blur-sm"
                   >
                     <FaGithub size={18} className="text-gray-300" />

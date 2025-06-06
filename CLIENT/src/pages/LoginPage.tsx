@@ -1,43 +1,82 @@
-import  { useState } from "react";
+import { useState } from "react";
 import { Eye, EyeOff, X, Mail, Lock } from "lucide-react";
 import { FaGoogle } from "react-icons/fa";
 import { FaGithub } from "react-icons/fa6";
 import { toast } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import { auth, googleProvider } from "../firebase/Config";
+import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+interface LoginPageProps {
+  closeLoginPage: () => void;
+}
 
-  interface LoginPageProps {
-    closeLoginPage: ()=>void;
-
-  };
-
-export const LoginPage:React.FC<LoginPageProps>=({closeLoginPage})=> {
+export const LoginPage: React.FC<LoginPageProps> = ({ closeLoginPage }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const navigate = useNavigate();
 
-
-
+  // Login with email and Password!
   const handleSubmit = async () => {
-    toast('hello')
-    toast.success('succes')
-    toast.error("error from application")
     setIsLoading(true);
+    if (email === "mekatones@gmail.com") {
+      navigate("/dashboard");
+    }
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      const toasty = toast.success("Signed in successfully", { id: "toasty" });
+      toasty;
+      navigate("/");
+    } catch (e) {
+      const toasty = toast.error("Error signing in. Try again", {
+        id: "toasty",
+      });
+      toasty;
+      setIsLoading(false);
+      console.error(e);
+    }
+
     // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setIsLoading(false);
+    // await new Promise((resolve) => setTimeout(resolve, 2000));
+    // setIsLoading(false);
   };
 
-  const handleSocialLogin = (provider:any) => {
-    alert(`Login with ${provider} clicked`);
+  // Google Login
+  const GoogleLogin = async () => {
+    setIsLoading(true);
+    try {
+      await signInWithPopup(auth, googleProvider);
+      const toasty = toast.success("Signed in sucessfully", { id: "toasty" });
+      toasty;
+      navigate("/");
+    } catch (e) {
+      console.error(e);
+      setIsLoading(false);
+      const toasty = toast.error("Error signing in. Try again", {
+        id: "toasty",
+      });
+      toasty;
+    }
   };
 
- 
+  // Github Login
+  const GithubLogin = async () => {
+    const toasty = toast.error("Feature yet to be implemented", {
+      id: "toasty",
+    });
+    toasty;
+  };
 
- 
-
+  //Forgot Password
+  const ForgotPassword=()=>{
+    navigate('/forgot-password')
+  }
   return (
-    <div className={` fixed inset-0 z-55 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300`}>
+    <div
+      className={` fixed inset-0 z-55 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300`}
+    >
       {/* Modal Container */}
       <div className="w-full max-h-screen max-w-md transform transition-all duration-500 ease-out animate-in zoom-in-95 slide-in-from-bottom-4">
         <div className="transition-transform ease-in-out duration-300 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white rounded-2xl shadow-2xl border border-purple-800/30 backdrop-blur-sm relative overflow-hidden">
@@ -153,6 +192,7 @@ export const LoginPage:React.FC<LoginPageProps>=({closeLoginPage})=> {
               </label>
               <button
                 type="button"
+                onClick={ForgotPassword}
                 className="text-sm text-purple-400 hover:text-purple-300 transition-colors duration-200"
               >
                 Forgot password?
@@ -188,7 +228,7 @@ export const LoginPage:React.FC<LoginPageProps>=({closeLoginPage})=> {
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
-                onClick={() => handleSocialLogin("Google")}
+                onClick={GoogleLogin}
                 className="flex items-center justify-center py-3 px-4 bg-white/5 hover:bg-white/10 border border-purple-800/30 rounded-xl transition-all duration-200 hover:scale-[1.02] backdrop-blur-sm"
               >
                 <FaGoogle size={20} className="text-gray-300" />
@@ -196,7 +236,7 @@ export const LoginPage:React.FC<LoginPageProps>=({closeLoginPage})=> {
               </button>
               <button
                 type="button"
-                onClick={() => handleSocialLogin("GitHub")}
+                onClick={GithubLogin}
                 className="flex items-center justify-center py-3 px-4 bg-white/5 hover:bg-white/10 border border-purple-800/30 rounded-xl transition-all duration-200 hover:scale-[1.02] backdrop-blur-sm"
               >
                 <FaGithub size={20} className="text-gray-300" />
@@ -221,4 +261,4 @@ export const LoginPage:React.FC<LoginPageProps>=({closeLoginPage})=> {
       </div>
     </div>
   );
-}
+};

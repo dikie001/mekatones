@@ -1,10 +1,10 @@
-import { FaDiagramSuccessor } from "react-icons/fa6"
 import MusicAdminDashboard from "./pages/Dashboard"
 import LandingPage from "./pages/Landing"
 import './scrollbar.css'
 import {Toaster} from 'react-hot-toast'
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import { CheckCircle, XCircle } from "lucide-react"
+import ForgotPasswordPage from "./pages/ForgotPassword"
 
 const App = () => {
   return (
@@ -41,6 +41,7 @@ const App = () => {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/dashboard" element={<MusicAdminDashboard />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage/>}/>
       </Routes>
     </Router>
   );
