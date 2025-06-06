@@ -30,17 +30,19 @@ export default function ForgotPasswordPage() {
   };
 
   const handleBackToLogin = () => {
-    setBack(true)
-
+setBack(true)
    
   };
+  const closeLoginPage=()=>{
+    setBack(false)
+  }
 
   const handleResendEmail = () => {
     setIsSubmitted(false);
     setEmail("");
   };
 
-  if (isSubmitted) {
+  if (isSubmitted && !back) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-900 via-slate-900 to-purple-800 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
@@ -85,7 +87,7 @@ export default function ForgotPasswordPage() {
    if(back){
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-900 via-slate-900 to-purple-800 ">
-        <LoginPage />
+        <LoginPage closeLoginPage={closeLoginPage}/>
       </div>
     );
    }
@@ -180,7 +182,7 @@ export default function ForgotPasswordPage() {
           {/* Sign In Link */}
           <button
             onClick={handleBackToLogin}
-            className="w-full text-purple-300 hover:text-purple-200 font-medium transition-colors duration-200 text-center"
+            className="w-full text-purple-300 hover:text-purple-100 font-medium transition-colors duration-200 text-center"
           >
             Sign in to your account
           </button>

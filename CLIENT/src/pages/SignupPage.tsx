@@ -15,6 +15,7 @@ import { auth, googleProvider } from "../firebase/Config";
 import { createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { LoginPage } from "./LoginPage";
 
 interface FormData {
   firstName: string;
@@ -53,6 +54,8 @@ export default function SignupPage() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [showDetails, setShowDetails] = useState<boolean>(false);
   const navigate = useNavigate();
+  const [toSignPage, setToSignPage]=useState(false)
+  const [hide, setHide]=useState<boolean>(false)
   // const [firstName, setFirstName]=useState<string>('');
   // const [lastName, setLastName]=useState<string>('');
   // const [email, setEmail]=useState<string>('');
@@ -109,6 +112,11 @@ export default function SignupPage() {
     }
   };
 
+  // To signup page
+  const ToSignupPageFunction=()=>{
+    setToSignPage(true)
+  }
+
   const handleBack = (): void => {
     setCurrentStep(1);
   };
@@ -135,7 +143,8 @@ export default function SignupPage() {
       setShowDetails(false);
       return userCredentials.user;
     } catch (e) {
-      throw e;
+      const toasty=toast.error('Error! Try again later',{id:'toasty'})
+
     }
   };
 
@@ -167,6 +176,13 @@ export default function SignupPage() {
     setShowDetails(false);
     setIsLoading(false);
   };
+
+  //close login page
+  const closeLoginPage=()=>{
+    setToSignPage(false)
+    setHide(true)
+    console.log(hide)
+  }
 
   const getPasswordStrength = (): number => {
     const password = formData.password;
@@ -216,77 +232,82 @@ export default function SignupPage() {
     return `${baseClasses} border-purple-800/50 hover:border-purple-600`;
   };
 
-  const DetailsModal = () => {
-    return (
-      <div
-        className={` fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 sm:p-6`}
-      >
+  if (toSignPage){
+    return(
+      <LoginPage closeLoginPage={closeLoginPage}/>
+    )
+  }
+    const DetailsModal = () => {
+      return (
         <div
-          className={`${
-            isLoading && "backdrop-blur"
-          } bg-gradient-to-br from-purple-700 via-slate-800 to-slate-950 text-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 relative animate-fadeIn`}
+          className={` fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 sm:p-6`}
         >
-          {/* Close Button */}
-          <button
-            onClick={closeDetailsModal}
-            className="absolute top-4 right-4 -white  rounded-full w-7 flex justify-center items-center h-7 transition"
+          <div
+            className={`${
+              toSignPage  && "hidden"
+            }  bg-gradient-to-br from-purple-700 via-slate-800 to-slate-950 text-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 relative animate-fadeIn`}
           >
-            <XIcon className="h-6 w-6 hover:rotate-90 transition-transform duration-300" />
-          </button>
+            {/* Close Button */}
+            <button
+              onClick={closeDetailsModal}
+              className="absolute top-4 right-4 -white  rounded-full w-7 flex justify-center items-center h-7 transition"
+            >
+              <XIcon className="h-6 w-6 hover:rotate-90 transition-transform duration-300" />
+            </button>
 
-          {/* Header */}
-          <div className="text-center mb-6">
-            <h2 className="text-3xl font-bold">🚀 Account Details Preview</h2>
-            <p className="text-sm text-slate-300 mt-2">
-              Please confirm your details below
-            </p>
-          </div>
-
-          {isLoading && (
-            <div className="fixed inset-0  flex flex-col h-50 rounded-lg items-center  m-auto shadow-md shadow-purple-700 bg-slate-800/90 w-50  justify-center ">
-              <FaSpinner className="animate-spin" size={40} />
-              <h3 className="mt-3">Creating Account...</h3>
+            {/* Header */}
+            <div className="text-center mb-6">
+              <h2 className="text-3xl font-bold">🚀 Account Details Preview</h2>
+              <p className="text-sm text-slate-300 mt-2">
+                Please confirm your details below
+              </p>
             </div>
-          )}
 
-          {/* Info Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-            {Object.entries(formData)
-              .filter(([key]) => key !== "confirmPassword") // Remove confirmPassword
-              .map(([key, value]) => (
-                <div
-                  key={key}
-                  className="bg-slate-800/50 border border-white/10 rounded-lg p-4 flex flex-col"
-                >
-                  <span className="text-sm text-slate-400 capitalize">
-                    {key.replace(/([A-Z])/g, " $1")}
-                  </span>
-                  <span className="text-purple-300 font-medium break-all">
-                    {value || "—"}
-                  </span>
-                </div>
-              ))}
-          </div>
+            {isLoading && (
+              <div className="fixed inset-0  flex flex-col h-50 rounded-lg items-center  m-auto shadow-md shadow-purple-700 bg-slate-800/90 w-50  justify-center ">
+                <FaSpinner className="animate-spin" size={40} />
+                <h3 className="mt-3">Creating Account...</h3>
+              </div>
+            )}
 
-          {/* Action Buttons */}
-          <div className="flex max-md:justify-between md:justify-end gap-3 mt-4">
-            <button
-              onClick={handleCancel}
-              className="px-5 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white transition"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleConfirm}
-              className="px-5 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-semibold transition"
-            >
-              Confirm
-            </button>
+            {/* Info Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+              {Object.entries(formData)
+                .filter(([key]) => key !== "confirmPassword") // Remove confirmPassword
+                .map(([key, value]) => (
+                  <div
+                    key={key}
+                    className="bg-slate-800/50 border border-white/10 rounded-lg p-4 flex flex-col"
+                  >
+                    <span className="text-sm text-slate-400 capitalize">
+                      {key.replace(/([A-Z])/g, " $1")}
+                    </span>
+                    <span className="text-purple-300 font-medium break-all">
+                      {value || "—"}
+                    </span>
+                  </div>
+                ))}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex max-md:justify-between md:justify-end gap-3 mt-4">
+              <button
+                onClick={handleCancel}
+                className="px-5 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirm}
+                className="px-5 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-semibold transition"
+              >
+                Confirm
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    );
-  };
+      );
+    };
 
   return (
     <div className="fixed inset-0 z-55 bg-slate-950 overflow-y-auto">
@@ -670,7 +691,7 @@ export default function SignupPage() {
               <span className="text-gray-400 text-sm">
                 Already have an account?{" "}
               </span>
-              <button className="text-purple-400 hover:text-purple-300 font-medium text-sm transition-colors duration-200">
+              <button onClick={ToSignupPageFunction} className="text-purple-400 hover:text-purple-300 font-medium text-sm transition-colors duration-200">
                 Sign in
               </button>
             </div>
