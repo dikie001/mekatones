@@ -61,6 +61,7 @@ const [openNotif, setOpenNotif]=useState<boolean>(false)
 
 //   Prevent the page from scrolling
  LockBodyScroll(isSignup);
+ LockBodyScroll(islogin)
 
   const tracks = [
     {
@@ -249,7 +250,7 @@ const [openNotif, setOpenNotif]=useState<boolean>(false)
             </div>
           </section>
 
-          {/* Upload Section */}
+          {/* Upload Section
           <section className="mb-12">
             <div className="bg-gradient-to-r from-blue-600/10 to-purple-600/10 rounded-2xl p-6 border border-white/10 backdrop-blur-sm">
               <div className="flex items-center justify-between mb-4">
@@ -271,7 +272,7 @@ const [openNotif, setOpenNotif]=useState<boolean>(false)
                 </button>
               </div>
             </div>
-          </section>
+          </section> */}
 
           {/* Featured Tracks */}
           <section className="mb-12">

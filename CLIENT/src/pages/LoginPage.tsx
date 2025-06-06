@@ -2,12 +2,10 @@ import  { useState } from "react";
 import { Eye, EyeOff, X, Mail, Lock } from "lucide-react";
 import { FaGoogle } from "react-icons/fa";
 import { FaGithub } from "react-icons/fa6";
+import { toast } from "react-hot-toast";
 
   interface LoginPageProps {
     closeLoginPage: ()=>void;
-
-
-
 
   };
 
@@ -21,16 +19,20 @@ export const LoginPage:React.FC<LoginPageProps>=({closeLoginPage})=> {
 
 
   const handleSubmit = async () => {
+    toast('hello')
+    toast.success('succes')
+    toast.error("error from application")
     setIsLoading(true);
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 2000));
     setIsLoading(false);
-    alert("Login successful!");
   };
 
   const handleSocialLogin = (provider:any) => {
     alert(`Login with ${provider} clicked`);
   };
+
+ 
 
  
 

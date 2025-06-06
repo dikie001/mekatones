@@ -93,12 +93,12 @@ const NotificationPanel: React.FC<CombinedProps> = ({
           {/* Panel */}
           <div
             className={`
-            fixed md:absolute z-50
-            md:top-full md:right-4 md:mt-4
+            fixed md:absolute z-57
+            md:top-full md:right-10 md:mt-18
             inset-x-4 top-20 md:inset-x-auto
             md:w-96 w-auto
             bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 
-            text-white rounded-xl shadow-2xl shadow-black/40
+            text-white  rounded-xl shadow-2xl shadow-black/40
             border border-white/10 backdrop-blur-sm
             transform transition-all duration-300 ease-out
             ${openNotif ? "scale-100 opacity-100" : "scale-95 opacity-0"}
@@ -145,10 +145,10 @@ const NotificationPanel: React.FC<CombinedProps> = ({
                         <div className="flex items-center justify-between">
                           <h4
                             className={`
-                            text-sm font-medium truncate
+                            text-sm font-semibold underline truncate
                             ${
                               notification.unread
-                                ? "text-white"
+                                ? "text-white "
                                 : "text-slate-300"
                             }
                           `}
@@ -159,10 +159,10 @@ const NotificationPanel: React.FC<CombinedProps> = ({
                             <div className="w-2 h-2 bg-purple-500 rounded-full ml-2 flex-shrink-0" />
                           )}
                         </div>
-                        <p className="text-sm text-slate-400 mt-1 line-clamp-2">
+                        <p className="text-sm text-slate-200 mt-1 line-clamp-2">
                           {notification.message}
                         </p>
-                        <p className="text-xs text-slate-500 mt-2">
+                        <p className="text-xs text-slate-400 mt-2">
                           {notification.time}
                         </p>
                       </div>

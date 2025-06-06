@@ -6,11 +6,15 @@ import {
   Lock,
   User,
   Phone,
- 
   ArrowRight,
   AlertCircle,
+  XIcon,
+  Loader,
 } from "lucide-react";
-import { FaGithub, FaGoogle } from "react-icons/fa6";
+import { FaGithub, FaGoogle, FaSpinner } from "react-icons/fa6";
+import { auth,googleProvider } from "../firebase/Config";
+import { createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import toast from "react-hot-toast";
 
 interface FormData {
   firstName: string;
@@ -33,7 +37,7 @@ interface FormErrors {
 
 type SocialProvider = "Google" | "GitHub";
 
-export default function SignupPage(){
+export default function SignupPage() {
   const [formData, setFormData] = useState<FormData>({
     firstName: "",
     lastName: "",
@@ -49,10 +53,16 @@ export default function SignupPage(){
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [showDetails, setShowDetails] = useState<boolean>(false);
+  // const [firstName, setFirstName]=useState<string>('');
+  // const [lastName, setLastName]=useState<string>('');
+  // const [email, setEmail]=useState<string>('');
+  // const [password, setPassword]=useState<string>('');
 
   const handleInputChange = (field: keyof FormData, value: string): void => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
+
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
@@ -71,7 +81,7 @@ export default function SignupPage(){
       } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
         newErrors.email = "Please enter a valid email";
       }
-    //   if (!formData.phone.trim()) newErrors.phone = "Phone number is required";
+      //   if (!formData.phone.trim()) newErrors.phone = "Phone number is required";
     }
 
     if (step === 2) {
@@ -107,15 +117,43 @@ export default function SignupPage(){
   const handleSubmit = async (): Promise<void> => {
     if (validateStep(2)) {
       setIsLoading(true);
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2500));
-      setIsLoading(false);
-      alert("Account created successfully!");
+      setShowDetails(true);
     }
   };
 
-  const handleSocialSignup = (provider: SocialProvider): void => {
-    alert(`Sign up with ${provider} clicked`);
+  // Confirm user details and initiate registration
+  const handleConfirm = async () => {
+    try {
+      const userCredentials = await createUserWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      );
+      toast.success("Account created successfully!");
+      setIsLoading(false);
+      setShowDetails(false);
+      return userCredentials.user;
+    } catch (e) {
+      throw e;
+    }
+  };
+
+  // Google Signup
+
+const GoogleSignup= async()=>{
+  try{
+    const googleAccount = await signInWithPopup(auth, googleProvider)
+    return googleAccount.user
+  }catch(e){
+    throw(e)
+  }
+
+
+}
+
+  const handleCancel = () => {
+    setIsLoading(false);
+    setShowDetails(false);
   };
 
   const getPasswordStrength = (): number => {
@@ -164,6 +202,70 @@ export default function SignupPage(){
     if (acceptTerms) return `${baseClasses} bg-purple-500 border-purple-500`;
     if (hasError) return `${baseClasses} border-red-500/50`;
     return `${baseClasses} border-purple-800/50 hover:border-purple-600`;
+  };
+
+  const DetailsModal = () => {
+    return (
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 sm:p-6">
+        <div className="bg-gradient-to-br from-purple-700 via-slate-800 to-slate-950 text-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 relative animate-fadeIn">
+          {/* Close Button */}
+          <button
+            onClick={() => setShowDetails(false)}
+            className="absolute top-4 right-4 text-white hover:text-purple-300 transition"
+          >
+            <XIcon className="h-6 w-6" />
+          </button>
+
+          {/* Header */}
+          <div className="text-center mb-6">
+            <h2 className="text-3xl font-bold">🚀 Account Details Preview</h2>
+            <p className="text-sm text-slate-300 mt-2">
+              Please confirm your details below
+            </p>
+          </div>
+
+          <div className="flex gap-10 justify-center backdrop-blur-2xl">
+            <FaSpinner className="animate-spin" size={40} />
+            <Loader className="animate-spin" size={40} />
+          </div>
+
+          {/* Info Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            {Object.entries(formData)
+              .filter(([key]) => key !== "confirmPassword") // Remove confirmPassword
+              .map(([key, value]) => (
+                <div
+                  key={key}
+                  className="bg-slate-800/50 border border-white/10 rounded-lg p-4 flex flex-col"
+                >
+                  <span className="text-sm text-slate-400 capitalize">
+                    {key.replace(/([A-Z])/g, " $1")}
+                  </span>
+                  <span className="text-purple-300 font-medium break-all">
+                    {value || "—"}
+                  </span>
+                </div>
+              ))}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex max-md:justify-between md:justify-end gap-3 mt-4">
+            <button
+              onClick={handleCancel}
+              className="px-5 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white transition"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleConfirm}
+              className="px-5 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-semibold transition"
+            >
+              Confirm
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -299,7 +401,8 @@ export default function SignupPage(){
                 {/* Phone Field */}
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Phone Number <span className="text-gray-400 text-sm">(optional)</span>
+                    Phone Number{" "}
+                    <span className="text-gray-400 text-sm">(optional)</span>
                   </label>
                   <div className="relative">
                     <Phone
@@ -345,14 +448,14 @@ export default function SignupPage(){
                 {/* Social Buttons */}
                 <div className="grid grid-cols-2 gap-3">
                   <button
-                    onClick={() => handleSocialSignup("Google")}
+                    onClick={() => GoogleSignup("Google")}
                     className="flex items-center justify-center py-3 px-4 bg-white/5 hover:bg-white/10 border border-purple-800/30 rounded-xl transition-all duration-200 hover:scale-[1.02] backdrop-blur-sm"
                   >
                     <FaGoogle size={18} className="text-gray-300" />
                     <span className="ml-2 text-sm text-gray-300">Google</span>
                   </button>
                   <button
-                    onClick={() => handleSocialSignup("GitHub")}
+                    onClick={() => GithubSignup("GitHub")}
                     className="flex items-center justify-center py-3 px-4 bg-white/5 hover:bg-white/10 border border-purple-800/30 rounded-xl transition-all duration-200 hover:scale-[1.02] backdrop-blur-sm"
                   >
                     <FaGithub size={18} className="text-gray-300" />
@@ -554,6 +657,7 @@ export default function SignupPage(){
           </div>
         </div>
       </div>
+      {showDetails && <DetailsModal />}
     </div>
   );
 }
