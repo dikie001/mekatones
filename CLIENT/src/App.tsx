@@ -7,12 +7,16 @@ import { CheckCircle, XCircle } from "lucide-react"
 import ForgotPasswordPage from "./pages/ForgotPassword"
 import AudioUploader from "./utils/cloudinary"
 import AudioList from "./utils/AudiList"
+import Library from "./pages/Library"
+import Discover from "./pages/Discover"
+import Trending from "./pages/Trending"
+import Latest from "./pages/Latest"
 
 const App = () => {
   return (
     <Router>
-      <AudioUploader/>
-      <AudioList/>
+      <AudioUploader />
+      <AudioList />
       <Toaster
         position="top-right"
         toastOptions={{
@@ -34,7 +38,7 @@ const App = () => {
           },
           // Error toast style
           error: {
-            icon: <XCircle  />,
+            icon: <XCircle />,
             style: {
               background: "linear-gradient(to right, #ef4444, #1e293b)", // red-slate combo
               color: "#fff",
@@ -45,7 +49,11 @@ const App = () => {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/dashboard" element={<MusicAdminDashboard />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage/>}/>
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/library" element={<Library />} />
+        <Route path="/discover" element={<Discover />} />
+        <Route path="/trending" element={<Trending />} />
+        <Route path="/latest" element={<Latest />} />
       </Routes>
     </Router>
   );

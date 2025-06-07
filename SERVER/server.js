@@ -18,6 +18,5 @@ app.use('/api/audios', getAudios )
 
 app.listen(PORT, ()=>{
   console.log(`Server running at http://localhost: ${PORT}`)
-  console.log("🌍 Cloudinary ENV:", process.env.CLOUDINARY_CLOUD_NAME);
 
 })

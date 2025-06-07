@@ -28,11 +28,13 @@ import {
   PlayCircle,
   
   X,
+  Star,
 } from "lucide-react";
 import {LoginModal} from "../components/ProfileModal";
 import {LoginPage} from "./LoginPage";
 import SignupPage from "./SignupPage";
 import NotificationPanel from "../components/NotificationPanel";
+import { Link } from "react-router-dom";
 
 
 
@@ -184,22 +186,23 @@ const [openNotif, setOpenNotif]=useState<boolean>(false)
           <nav className="p-6">
             <div className="space-y-2 mb-8">
               {[
-                { icon: Home, label: "Home", id: "home" },
-                { icon: Compass, label: "Discover", id: "discover" },
-                { icon: Library, label: "Library", id: "library" },
-                { icon: TrendingUp, label: "Trending", id: "trending" },
+                { icon: Home, label: "Home", id: "home", to:'/' },
+                { icon: Compass, label: "Discover", id: "discover", to:'/discover' },
+                { icon: Library, label: "Library", id: "library",to:'/library' },
+                { icon: TrendingUp, label: "Trending", id: "trending",to:'trending' },
+                {icon: Star, label: "Latest", id:'latest',to:'latest'}
               ].map((item) => (
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                  className={`w-full flex items-center outline-0 space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     activeTab === item.id
-                      ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
+                      ? "bg-purple-500/20 text-purple-300  ring-2  ring-purple-500"
                       : "text-gray-300 hover:text-white hover:bg-white/5"
                   }`}
                 >
                   <item.icon className="w-5 h-5" />
-                  <span className="font-medium">{item.label}</span>
+                  <span className="font-medium"><Link to={item.to}>{item.label}</Link></span>
                 </button>
               ))}
             </div>
