@@ -184,6 +184,10 @@ export default function SignupPage() {
     console.log(hide)
   }
 
+  // Close signup Page
+  const closeSignupPage=()=>{
+    console.log('close')
+  }
   const getPasswordStrength = (): number => {
     const password = formData.password;
     let strength = 0;
@@ -273,7 +277,7 @@ export default function SignupPage() {
             {/* Info Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
               {Object.entries(formData)
-                .filter(([key]) => key !== "confirmPassword") // Remove confirmPassword
+                .filter(([key]) => key !== "confirmPassword") 
                 .map(([key, value]) => (
                   <div
                     key={key}
@@ -310,7 +314,7 @@ export default function SignupPage() {
     };
 
   return (
-    <div className="fixed inset-0 z-55 bg-slate-950 overflow-y-auto">
+    <div className="fixed inset-0 z-55 bg-gradient-to-tl from-purple-900 via-slate-900 to-purple-800 overflow-y-auto">
       {/* Animated Background */}
       <div className="absolute inset-0">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/20 rounded-full mix-blend-multiply filter blur-3xl animate-pulse"></div>
@@ -321,9 +325,12 @@ export default function SignupPage() {
       {/* Content */}
       <div className="relative z-10 min-h-full flex items-center justify-center p-4 sm:p-8">
         <div className="w-full max-w-md">
-          <div className="transition-transform ease-in-out duration-300 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white rounded-2xl shadow-2xl border border-purple-800/30 backdrop-blur-sm overflow-hidden">
+          <div className="transition-transform ease-in-out duration-300  bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white rounded-2xl shadow-2xl border border-purple-800/30 backdrop-blur-sm overflow-hidden">
+            <div className="absolute top-2 h-8 w-8 hover:rotate-90 active:rotate-180 transition-transform duration-300 hover:bg-black/10 flex justify-center items-center rounded-full right-4">
+              <XIcon size={20} onClick={closeSignupPage}/>
+            </div>
             {/* Progress Indicator */}
-            <div className="p-6 pb-4">
+            <div className="p-6 pb-4 mt-4">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-sm text-gray-400">
                   Step {currentStep} of 2
@@ -691,7 +698,10 @@ export default function SignupPage() {
               <span className="text-gray-400 text-sm">
                 Already have an account?{" "}
               </span>
-              <button onClick={ToSignupPageFunction} className="text-purple-400 hover:text-purple-300 font-medium text-sm transition-colors duration-200">
+              <button
+                onClick={ToSignupPageFunction}
+                className="text-purple-400 hover:text-purple-300 font-medium text-sm transition-colors duration-200"
+              >
                 Sign in
               </button>
             </div>

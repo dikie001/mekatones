@@ -1,5 +1,4 @@
-import { LogIn, User, UserPlus, X } from "lucide-react";
-import {Link} from 'react-router-dom'
+import { LogIn, UserPlus, X } from "lucide-react";
 
 interface LoginModalProps {
   onLoginClick: () => void;
@@ -66,12 +65,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
               <UserPlus size={18} />
               Create Account
             </button>
-            <Link
-              to="/dashboard"
-              className="text-white flex  justify-center bg-blue-500 w-full px-4 py-2 rounded"
-            >
-             <User/> admin
-            </Link>
+       
           </div>
         </div>
       </div>

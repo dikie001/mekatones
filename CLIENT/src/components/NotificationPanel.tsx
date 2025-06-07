@@ -1,6 +1,7 @@
 // NOTIFICATION PANEL - Updated with matching dark gradient theme
 import React, { useState } from "react";
 import { Bell, X, Check, AlertCircle, Info, Star } from "lucide-react";
+import { LockBodyScroll } from "../hooks/LockScroll";
 
 interface Notification {
   id: string;
@@ -80,21 +81,21 @@ const NotificationPanel: React.FC<CombinedProps> = ({
   };
 
   return (
-    <div className="relative">
+    <div className=" relative">
       {/* Notification Panel */}
       {openNotif && (
         <>
           {/* Mobile backdrop */}
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+            className="fixed inset-0 bg-black/50 bg-opacity-50 z-40 md:hidden"
             onClick={() => setOpenNotif((prev) => !prev)}
           />
 
           {/* Panel */}
           <div
             className={`
-            fixed md:absolute z-57
-            md:top-full md:right-10 md:mt-18
+            fixed md:absolute   z-57
+            md:top-full md:right-10  md:mt-18
             inset-x-4 top-20 md:inset-x-auto
             md:w-96 w-auto
             bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 

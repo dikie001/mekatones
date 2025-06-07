@@ -5,10 +5,12 @@ import {Toaster} from 'react-hot-toast'
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import { CheckCircle, XCircle } from "lucide-react"
 import ForgotPasswordPage from "./pages/ForgotPassword"
+import AudioUploader from "./utils/cloudinary"
 
 const App = () => {
   return (
     <Router>
+      <AudioUploader/>
       <Toaster
         position="top-right"
         toastOptions={{
