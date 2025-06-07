@@ -1,22 +1,20 @@
 import MusicAdminDashboard from "./pages/Dashboard"
-import LandingPage from "./pages/Landing"
+import LandingPage from "./pages/Home"
 import './scrollbar.css'
 import {Toaster} from 'react-hot-toast'
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import { CheckCircle, XCircle } from "lucide-react"
 import ForgotPasswordPage from "./pages/ForgotPassword"
 import AudioUploader from "./utils/cloudinary"
-import AudioList from "./utils/AudiList"
 import Library from "./pages/Library"
-import Discover from "./pages/Discover"
-import Trending from "./pages/Trending"
-import Latest from "./pages/Latest"
+import AuthPage from "./pages/Auth"
+import BlogPage from "./pages/BlogPage"
+
 
 const App = () => {
   return (
     <Router>
-      <AudioUploader />
-      <AudioList />
+      {/* <AudioUploader /> */}
       <Toaster
         position="top-right"
         toastOptions={{
@@ -51,9 +49,8 @@ const App = () => {
         <Route path="/dashboard" element={<MusicAdminDashboard />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/library" element={<Library />} />
-        <Route path="/discover" element={<Discover />} />
-        <Route path="/trending" element={<Trending />} />
-        <Route path="/latest" element={<Latest />} />
+        <Route path="/auth-page" element={<AuthPage />} />
+        <Route path="/blog-page" element={<BlogPage />} />
       </Routes>
     </Router>
   );
