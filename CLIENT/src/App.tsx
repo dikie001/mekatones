@@ -6,11 +6,13 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import { CheckCircle, XCircle } from "lucide-react"
 import ForgotPasswordPage from "./pages/ForgotPassword"
 import AudioUploader from "./utils/cloudinary"
+import AudioList from "./utils/AudiList"
 
 const App = () => {
   return (
     <Router>
       <AudioUploader/>
+      <AudioList/>
       <Toaster
         position="top-right"
         toastOptions={{

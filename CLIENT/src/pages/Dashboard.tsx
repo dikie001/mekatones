@@ -396,7 +396,7 @@ const PublishTracks=()=>{
             {activeTab === "upload" && (
               <div className="space-y-6">
                 <h2 className="text-2xl font-bold text-white">Upload Music</h2>
-
+                    
                 <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-8">
                   <div className="border-2 border-dashed border-white/30 rounded-lg p-12 text-center hover:border-purple-400 transition-colors">
                     <Upload className="h-12 w-12 text-white/60 mx-auto mb-4" />

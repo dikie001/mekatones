@@ -1,9 +1,8 @@
 import { useState } from "react";
 
 const CLOUD_NAME = "dwqjonzpo";
-const UPLOAD_PRESET = "audios";
-
-const MAX_FILE_SIZE_MB = 10;
+const UPLOAD_PRESET = "audios"; // ✅ This must match your Cloudinary unsigned preset name
+const MAX_FILE_SIZE_MB = 20;
 const ALLOWED_TYPES = ["audio/mpeg", "audio/wav", "audio/mp3", "audio/ogg"];
 
 const AudioUploader = () => {
@@ -17,13 +16,15 @@ const AudioUploader = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // ✅ Validate file type
+    console.log("📁 Selected file:", file);
+
+    // ✅ Check type
     if (!ALLOWED_TYPES.includes(file.type)) {
       setError("⚠️ File type not supported. Please upload MP3, WAV, or OGG.");
       return;
     }
 
-    // ✅ Validate file size
+    // ✅ Check size
     if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
       setError(`⚠️ File too large. Max size is ${MAX_FILE_SIZE_MB}MB.`);
       return;
@@ -42,40 +43,56 @@ const AudioUploader = () => {
     formData.append("file", audioFile);
     formData.append("upload_preset", UPLOAD_PRESET);
 
+    console.log("🚀 Uploading file to Cloudinary...");
+    console.log(
+      "🌐 Endpoint:",
+      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/upload`
+    );
+    console.log("📦 FormData entries:", [...formData.entries()]);
+
     try {
       const xhr = new XMLHttpRequest();
-      xhr.open(
-        "POST",
-        `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`
-      );
+      xhr.open(`POST`, `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/upload`);
 
-      // Track upload progress
+      // 🔄 Progress bar update
       xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
           const percent = Math.round((event.loaded / event.total) * 100);
+          console.log(`📊 Upload progress: ${percent}%`);
           setUploadProgress(percent);
         }
       };
 
+      // ✅ On success
       xhr.onload = () => {
         const res = JSON.parse(xhr.responseText);
-        setAudioUrl(res.secure_url);
-        setUploadProgress(100);
+        console.log("✅ Cloudinary Response:", res);
+
+        if (xhr.status === 200) {
+          setAudioUrl(res.secure_url);
+          setUploadProgress(100);
+        } else {
+          setError(
+            `❌ Upload failed: ${res?.error?.message || "Unknown error"}`
+          );
+        }
       };
 
+      // ❌ On error
       xhr.onerror = () => {
+        console.error("🔥 Network/Upload error");
         setError("❌ Upload failed. Try again.");
       };
 
       xhr.send(formData);
     } catch (err) {
+      console.error("💥 Unexpected Error:", err);
       setError("❌ Unexpected error occurred.");
-      console.error(err);
     }
   };
 
   return (
-    <div className="p-6 fixed z-60 bg-zinc-900 text-white rounded-xl max-w-md mx-auto">
+    <div className="p-6 fixed top-100 opacity-100 z-60 bg-zinc-900 text-white rounded-xl max-w-md mx-auto">
       <h2 className="text-xl font-semibold mb-4">🎵 Upload Your Audio</h2>
 
       <input
