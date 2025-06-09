@@ -1,25 +1,45 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { Music, Calendar, Loader2, AlertCircle } from "lucide-react";
+import React, { useEffect, useState, useRef } from "react";
+import {
+  Music,
+  Calendar,
+  Loader2,
+  AlertCircle,
+  Play,
+  Pause,
+} from "lucide-react";
 
 interface AudioFile {
   url: string;
   public_id: string;
   created_at: string;
-  display_name:string;
+  name: string;
+  size: number;
+}
+
+interface CachedAudio {
+  blob: Blob;
+  duration: number;
+  currentTime: number;
 }
 
 const Library: React.FC = () => {
   const [audios, setAudios] = useState<AudioFile[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
+  const [cachedAudios, setCachedAudios] = useState<Map<string, CachedAudio>>(
+    new Map()
+  );
+  const [playingId, setPlayingId] = useState<string | null>(null);
+  const [loadingCache, setLoadingCache] = useState<Set<string>>(new Set());
+  const audioRefs = useRef<Map<string, HTMLAudioElement>>(new Map());
 
   useEffect(() => {
     const fetchAudios = async () => {
       setLoading(true);
       try {
-        const res = await axios.get("http://localhost:3000/api/audios");
-        setAudios(res.data);
+        const res = await fetch("http://localhost:3000/api/audios");
+        const data = await res.json();
+        setAudios(data);
       } catch (err) {
         setError("Failed to fetch audio files");
       } finally {
@@ -30,39 +50,109 @@ const Library: React.FC = () => {
     fetchAudios();
   }, []);
 
+  const cacheAudio = async (audioFile: AudioFile) => {
+    if (
+      cachedAudios.has(audioFile.public_id) ||
+      loadingCache.has(audioFile.public_id)
+    )
+      return;
+
+    setLoadingCache((prev) => new Set(prev).add(audioFile.public_id));
+
+    try {
+      const response = await fetch(audioFile.url);
+      const blob = await response.blob();
+
+      const audio = new Audio();
+      const objectUrl = URL.createObjectURL(blob);
+      audio.src = objectUrl;
+
+      await new Promise((resolve, reject) => {
+        audio.addEventListener("loadedmetadata", resolve);
+        audio.addEventListener("error", reject);
+      });
+
+      setCachedAudios((prev) =>
+        new Map(prev).set(audioFile.public_id, {
+          blob,
+          duration: audio.duration,
+          currentTime: 0,
+        })
+      );
+    } catch (error) {
+      console.error("Failed to cache audio:", error);
+    } finally {
+      setLoadingCache((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(audioFile.public_id);
+        return newSet;
+      });
+    }
+  };
+
+  const handlePlay = async (audioFile: AudioFile) => {
+    const audio = audioRefs.current.get(audioFile.public_id);
+    if (!audio) return;
+
+    if (playingId && playingId !== audioFile.public_id) {
+      const currentAudio = audioRefs.current.get(playingId);
+      if (currentAudio) currentAudio.pause();
+    }
+
+    if (playingId === audioFile.public_id) {
+      audio.pause();
+      setPlayingId(null);
+    } else {
+      await cacheAudio(audioFile);
+      const cached = cachedAudios.get(audioFile.public_id);
+      if (cached) {
+        audio.currentTime = cached.currentTime;
+      }
+      audio.play();
+      setPlayingId(audioFile.public_id);
+    }
+  };
+
+  const handleTimeUpdate = (audioFile: AudioFile, currentTime: number) => {
+    setCachedAudios((prev) => {
+      const cached = prev.get(audioFile.public_id);
+      if (cached) {
+        return new Map(prev).set(audioFile.public_id, {
+          ...cached,
+          currentTime,
+        });
+      }
+      return prev;
+    });
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
     });
+  };
+
+  const formatSize = (bytes: number) => {
+    return bytes > 1024 * 1024
+      ? `${(bytes / 1024 / 1024).toFixed(1)} MB`
+      : `${Math.round(bytes / 1024)} KB`;
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-slate-800 to-purple-800 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-slate-800 to-purple-800 flex items-center justify-center p-4">
         <div className="text-center">
-          <div className="relative">
-            <Loader2 className="w-16 h-16 text-purple-300 animate-spin mx-auto mb-4" />
-            <div className="absolute inset-0 w-16 h-16 border-4 border-purple-400/20 rounded-full animate-pulse mx-auto"></div>
-          </div>
-          <p className="text-purple-200 text-lg font-medium">
-            Loading audios...
-          </p>
-          <div className="mt-4 flex justify-center space-x-1">
-            <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"></div>
-            <div
-              className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"
-              style={{ animationDelay: "0.1s" }}
-            ></div>
-            <div
-              className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"
-              style={{ animationDelay: "0.2s" }}
-            ></div>
-          </div>
+          <Loader2 className="w-12 h-12 text-purple-300 animate-spin mx-auto mb-4" />
+          <p className="text-purple-200">Loading audios...</p>
         </div>
       </div>
     );
@@ -70,13 +160,13 @@ const Library: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-slate-800 to-purple-800 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto p-8">
-          <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-white mb-2">
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-slate-800 to-purple-800 flex items-center justify-center p-4">
+        <div className="text-center max-w-md mx-auto">
+          <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-white mb-2">
             Something went wrong
           </h2>
-          <p className="text-red-300">{error}</p>
+          <p className="text-red-300 text-sm">{error}</p>
         </div>
       </div>
     );
@@ -85,108 +175,121 @@ const Library: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-slate-800 to-purple-800">
       {/* Header */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-slate-600/20"></div>
-        <div className="relative px-6 py-12">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-purple-500 to-slate-500 rounded-2xl mb-6 shadow-2xl">
-              <Music className="w-10 h-10 text-white" />
-            </div>
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-200 to-slate-200 bg-clip-text text-transparent mb-4">
-              🎵 Audio Files
-            </h1>
-            <p className="text-purple-200 text-lg max-w-2xl mx-auto">
-              Your curated collection of audio files
-            </p>
-            {audios.length > 0 && (
-              <div className="mt-6 text-purple-300">
-                <span className="text-sm font-medium">
-                  {audios.length} files available
-                </span>
-              </div>
-            )}
+      <div className="px-4 sm:px-6 py-8 sm:py-12">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-500 to-slate-500 rounded-xl mb-4 shadow-xl">
+            <Music className="w-8 h-8 text-white" />
           </div>
+          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-purple-200 to-slate-200 bg-clip-text text-transparent mb-2">
+            🎵 Audio Library
+          </h1>
+          <p className="text-purple-200 text-sm sm:text-base">
+            Your curated collection of audio files
+          </p>
+          {audios.length > 0 && (
+            <div className="mt-4 text-purple-300 text-sm">
+              {audios.length} files available
+            </div>
+          )}
         </div>
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-6 pb-12">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 pb-12">
         {audios.length === 0 ? (
-          <div className="text-center py-16">
-            <Music className="w-24 h-24 text-purple-400/50 mx-auto mb-6" />
-            <h3 className="text-2xl font-bold text-white mb-2">
+          <div className="text-center py-12">
+            <Music className="w-16 h-16 text-purple-400/50 mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-white mb-2">
               No audios found
             </h3>
-            <p className="text-purple-200">Your audio collection is empty</p>
+            <p className="text-purple-200 text-sm">
+              Your audio collection is empty
+            </p>
           </div>
         ) : (
-          <div className="space-y-6">
-            {audios.map((audio, index) => (
-              <div
-                key={audio.public_id}
-                className="group relative bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] hover:bg-white/15"
-                style={{
-                  animation: `slideInUp 0.6s ease-out ${index * 0.1}s both`,
-                }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-slate-500/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="space-y-4">
+            {audios.map(function (audio) {
+              const cached = cachedAudios.get(audio.public_id);
+              const isPlaying = playingId === audio.public_id;
+              const isCaching = loadingCache.has(audio.public_id);
 
-                <div className="relative flex items-center justify-between mb-6">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-14 h-14 bg-gradient-to-r from-purple-500 to-slate-500 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
-                      <Music className="w-7 h-7 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-semibold text-white mb-1">
-                        Audio File
-                      </h3>
-                      <div className="flex items-center text-purple-300 text-sm">
-                        <Calendar className="w-4 h-4 mr-2" />
-                        {formatDate(audio.created_at)}
+              return (
+                <div
+                  key={audio.public_id}
+                  className="group bg-white/10 backdrop-blur-lg rounded-xl p-4 sm:p-6 border border-white/20 hover:bg-white/15 transition-all duration-300"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    {/* Audio Info */}
+                    <div className="flex items-center space-x-3 flex-1 min-w-0">
+                      <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-slate-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Music className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-sm sm:text-base font-semibold text-white truncate">
+                          {audio.name}
+                        </h3>
+                        <div className="flex items-center text-purple-300 text-xs sm:text-sm gap-3">
+                          <span className="flex items-center">
+                            <Calendar className="w-3 h-3 mr-1" />
+                            {formatDate(audio.created_at)}
+                          </span>
+                          <span className="bg-white/10 px-2 py-1 rounded text-xs">
+                            {formatSize(audio.size)}
+                          </span>
+                        </div>
                       </div>
                     </div>
+
+                    {/* Custom Audio Controls */}
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => handlePlay(audio)}
+                        disabled={isCaching}
+                        className="w-8 h-8 bg-purple-500 hover:bg-purple-600 rounded-full flex items-center justify-center transition-colors disabled:opacity-50"
+                      >
+                        {isCaching ? (
+                          <Loader2 className="w-4 h-4 text-white animate-spin" />
+                        ) : isPlaying ? (
+                          <Pause className="w-4 h-4 text-white" />
+                        ) : (
+                          <Play className="w-4 h-4 text-white ml-0.5" />
+                        )}
+                      </button>
+
+                      {cached && (
+                        <div className="flex items-center gap-2 text-xs text-purple-300">
+                          <span>{formatTime(cached.currentTime)}</span>
+                          <div className="w-16 sm:w-24 h-1 bg-white/20 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-purple-400 transition-all duration-300"
+                              style={{
+                                width: `${(cached.currentTime / cached.duration) * 100}%`,
+                              }} />
+                          </div>
+                          <span>{formatTime(cached.duration)}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="text-purple-300 text-sm font-mono bg-white/5 px-3 py-1 rounded-lg">
-                    {audio.display_name}
-                  </div>
+                  {/* Hidden Audio Element */}
+                  <audio
+                    ref={(el) => {
+                      if (el) {
+                        audioRefs.current.set(audio.public_id, el);
+                      }
+                    } }
+                    src={cached ? URL.createObjectURL(cached.blob) : audio.url}
+                    onTimeUpdate={(e) => handleTimeUpdate(audio, e.currentTarget.currentTime)}
+                    onEnded={() => setPlayingId(null)}
+                    preload="none"
+                    className="hidden" />
                 </div>
-
-                <div className="relative">
-                  <div className="bg-white/5 rounded-xl p-6 border border-white/10">
-                    <audio controls className="w-full h-12 rounded-lg">
-                      <source src={audio.url} type="audio/mpeg" />
-                      Your browser does not support the audio element.
-                    </audio>
-                  </div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
-
-      <style >{`
-        @keyframes slideInUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        audio {
-          filter: invert(1) hue-rotate(180deg);
-        }
-
-        audio::-webkit-media-controls-panel {
-          background-color: rgba(255, 255, 255, 0.1);
-          border-radius: 8px;
-        }
-      `}</style>
     </div>
   );
 };

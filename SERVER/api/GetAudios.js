@@ -41,6 +41,8 @@ router.get("/", async (req, res) => {
       created_at: item.created_at,
       duration: item.duration,
       format: item.format,
+      name:item.display_name || item.public_id,
+      size: item.bytes,
     }));
 
     res.json(audios);

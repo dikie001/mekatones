@@ -9,7 +9,11 @@ console.log("🌍 Cloudinary ENV:", process.env.CLOUDINARY_CLOUD_NAME);
 const app = express()
 const PORT = 3000
 
-app.use(cors())
+
+app.use(cors({
+  origin:'http://localhost:5174',
+  credentials:true
+}))
 app.use(express.json())
 
 // Import routes
